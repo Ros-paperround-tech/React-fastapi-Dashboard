@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Flow" id="platform-architecture">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;Dashboard Platform on Google Cloud&lt;/b&gt; &#8212; flow view: request path, caching, Table syncs, delivery (spec issue #1)" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="0" width="1200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- People -->
+        <mxCell id="viewer" value="&lt;b&gt;Dashboard viewer&lt;/b&gt;&lt;br&gt;business user, Google Workspace account" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="280" y="50" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" value="&lt;b&gt;Platform admin&lt;/b&gt;&lt;br&gt;holds the reserved admin Grant" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="520" y="50" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Browser tier -->
+        <mxCell id="browser" value="Browser: one Dashboard app (React + Vite, shared UI / chart / auth / API-client packages)" style="swimlane;startSize=30;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="640" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cache" value="&lt;b&gt;TanStack Query + persisted cache&lt;/b&gt;&lt;br&gt;IndexedDB, keys include Sync stamps&lt;br&gt;historic = never refetched" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="browser">
+          <mxGeometry x="20" y="50" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pages" value="&lt;b&gt;Pages and charts&lt;/b&gt;&lt;br&gt;layout shell, URL-bound filters, stale indicator, no-access page" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="browser">
+          <mxGeometry x="230" y="50" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="authc" value="&lt;b&gt;Auth client (Firebase SDK)&lt;/b&gt;&lt;br&gt;ID token + custom claims&lt;br&gt;route guard by Dashboard key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="browser">
+          <mxGeometry x="440" y="50" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- External source -->
+        <mxCell id="bigquery" value="&lt;b&gt;Source: BigQuery&lt;/b&gt;&lt;br&gt;final tables; Measures calculated only here" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="780" y="230" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- GCP project container -->
+        <mxCell id="gcp" value="Google Cloud project &#8212; one per environment (dev, QA, prod), identical shape from one Terraform module, region europe-west2" style="swimlane;startSize=30;html=1;fillColor=#fafafa;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="1600" height="790" as="geometry" />
+        </mxCell>
+
+        <!-- Firebase tier -->
+        <mxCell id="fb" value="Firebase (project per environment)" style="swimlane;startSize=30;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="gcp">
+          <mxGeometry x="20" y="50" width="640" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="hosting" value="&lt;b&gt;Firebase Hosting&lt;/b&gt;&lt;br&gt;one site per Dashboard; serves static bundle;&lt;br&gt;rewrites /api/* to Cloud Run (same origin)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="fb">
+          <mxGeometry x="20" y="40" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="fbauth" value="&lt;b&gt;Firebase Authentication&lt;/b&gt;&lt;br&gt;Google sign-in, Workspace domain only;&lt;br&gt;custom claims = list of Dashboard keys" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="fb">
+          <mxGeometry x="330" y="40" width="290" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- API tier -->
+        <mxCell id="api" value="Cloud Run: Platform API (FastAPI, one router module per Dashboard)" style="swimlane;startSize=30;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="gcp">
+          <mxGeometry x="20" y="250" width="640" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="verifier" value="&lt;b&gt;Token verifier&lt;/b&gt;&lt;br&gt;Firebase Admin SDK; hosted-domain check server-side" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="api">
+          <mxGeometry x="20" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="grant" value="&lt;b&gt;Grant check + admin Grant API&lt;/b&gt;&lt;br&gt;route scoped to a Dashboard key; 401 / 403; each change appends a Grant event" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="api">
+          <mxGeometry x="230" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="routers" value="&lt;b&gt;Named queries&lt;/b&gt;&lt;br&gt;typed rows of Measures from the catalogue; historic | current; OpenAPI drives TS client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="api">
+          <mxGeometry x="440" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="version" value="&lt;b&gt;Stamps endpoint&lt;/b&gt;&lt;br&gt;Sync stamp per table; polled cheaply by the browser; stamp headers on every response" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="api">
+          <mxGeometry x="20" y="150" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lru" value="&lt;b&gt;Response cache&lt;/b&gt;&lt;br&gt;in-memory LRU keyed by query + params + Sync stamps; ETag + Cache-Control by freshness class" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="api">
+          <mxGeometry x="440" y="150" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Serving store tier -->
+        <mxCell id="storelane" value="PostgreSQL on Cloud SQL (managed Postgres; same region, IAM auth, pooled; JSONB + pgvector available)" style="swimlane;startSize=30;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="gcp">
+          <mxGeometry x="20" y="560" width="640" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="store" value="&lt;b&gt;Serving store&lt;/b&gt;&lt;br&gt;synced tables + indexes &#183; Grants + Grant events &#183; sync_log holding each table's Sync stamp" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="storelane">
+          <mxGeometry x="40" y="40" width="600" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="storenote" value="A table's Sync stamp (set when its Table sync succeeds) is the cache key at every layer: IndexedDB, ETag, LRU. No explicit invalidation." style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;" vertex="1" parent="storelane">
+          <mxGeometry x="40" y="148" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Replication tier -->
+        <mxCell id="repl" value="Sync component (own package + CLI, Cloud Run Job, settings-driven)" style="swimlane;startSize=30;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="gcp">
+          <mxGeometry x="720" y="50" width="520" height="710" as="geometry" />
+        </mxCell>
+        <mxCell id="job" value="&lt;b&gt;Cloud Run Job: sync&lt;/b&gt;&lt;br&gt;runs every Table sync on the invoked Sync schedule" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="20" y="40" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sched" value="&lt;b&gt;Cloud Scheduler&lt;/b&gt;&lt;br&gt;one trigger per Sync schedule, one default; on demand via CLI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="280" y="40" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="&lt;b&gt;1. Export&lt;/b&gt;&lt;br&gt;BigQuery table to Parquet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="20" y="150" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="gcs" value="&lt;b&gt;Cloud Storage&lt;/b&gt;&lt;br&gt;Parquet exports" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="280" y="145" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="&lt;b&gt;2. Load staging table&lt;/b&gt;&lt;br&gt;build indexes from sync settings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="20" y="260" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dec" value="&lt;b&gt;3. Row count&lt;br&gt;matches Source?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="20" y="370" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="fail" value="&lt;b&gt;Keep previous table&lt;/b&gt;&lt;br&gt;stale, never broken; alert owner contact" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="280" y="385" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="&lt;b&gt;4. Swap into Serving store&lt;/b&gt;&lt;br&gt;staging to live in one transaction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="20" y="500" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="&lt;b&gt;5. Record and publish&lt;/b&gt;&lt;br&gt;write sync_log; set this table's Sync stamp in the Serving store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="repl">
+          <mxGeometry x="20" y="610" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Ops tier -->
+        <mxCell id="ops" value="Platform services" style="swimlane;startSize=30;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="gcp">
+          <mxGeometry x="1300" y="50" width="280" height="710" as="geometry" />
+        </mxCell>
+        <mxCell id="monitoring" value="&lt;b&gt;Cloud Monitoring + Logging&lt;/b&gt;&lt;br&gt;request log kept 13 months in audit dataset; alerts: 5xx, p95, sync failure, freshness limit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="ops">
+          <mxGeometry x="20" y="40" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="secrets" value="&lt;b&gt;Secret Manager&lt;/b&gt;&lt;br&gt;API secrets; nothing in repo or artefacts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="ops">
+          <mxGeometry x="20" y="150" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="registry" value="&lt;b&gt;Artifact Registry&lt;/b&gt;&lt;br&gt;API and sync images built once, promoted by tag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="ops">
+          <mxGeometry x="20" y="240" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Delivery row -->
+        <mxCell id="terraform" value="&lt;b&gt;Terraform&lt;/b&gt;&lt;br&gt;one module, per-environment variables; plan validated in CI" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1250" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="github" value="&lt;b&gt;GitHub monorepo (Platform)&lt;/b&gt;&lt;br&gt;pnpm + Turborepo, FastAPI with uv, Terraform, scaffolding generator" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1250" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="actions" value="&lt;b&gt;GitHub Actions&lt;/b&gt;&lt;br&gt;PR: affected-only lint, types, tests, dev preview channel &#183; merge: build image once, deploy dev &#183; manual promote to QA &#183; approval-gated promote to prod (same image + bundles) &#183; rollback = previous tag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1250" width="440" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="1340" width="380" height="222" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="legend"><mxGeometry x="10" y="30" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg1t" value="Application service / step" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="28" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg2" value="" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="legend"><mxGeometry x="10" y="54" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg2t" value="Identity, access, secrets" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="52" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg3" value="" style="rounded=0;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="legend"><mxGeometry x="10" y="78" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg3t" value="Edge / hosting gateway" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="76" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg4" value="" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="legend"><mxGeometry x="10" y="102" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg4t" value="Data store" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="100" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg5" value="" style="rounded=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="legend"><mxGeometry x="10" y="126" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg5t" value="Cache, scheduling, pipeline, decision" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="124" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg6" value="" style="rounded=0;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="legend"><mxGeometry x="10" y="150" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg6t" value="Failure handling, alerting" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="148" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg7" value="" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="legend"><mxGeometry x="10" y="174" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg7t" value="People" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="172" width="300" height="20" as="geometry" /></mxCell>
+        <mxCell id="leg8" value="" style="rounded=0;dashed=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="legend"><mxGeometry x="10" y="198" width="30" height="16" as="geometry" /></mxCell>
+        <mxCell id="leg8t" value="External system or tool (dashed)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="50" y="196" width="300" height="20" as="geometry" /></mxCell>
+
+        <!-- Edges: people to browser -->
+        <mxCell id="e_viewer" value="signs in, views" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="viewer" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_admin" value="manages Grants" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.875;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="admin" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: inside browser -->
+        <mxCell id="e_pages_cache" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="pages" target="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_pages_authc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="authc" target="pages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: browser to Firebase -->
+        <mxCell id="e_cache_hosting" value="GET /api/{dashboard}/{query}&lt;br&gt;Bearer ID token, If-None-Match" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="cache" target="hosting">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="90" y="-45" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_authc_fbauth" value="Google sign-in; ID token with claims" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;startArrow=block;startSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.6207;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="authc" target="fbauth">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="110" y="-45" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Edges: Firebase to API -->
+        <mxCell id="e_hosting_verifier" value="rewrite /api/* to Cloud Run" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.3214;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="hosting" target="verifier">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="80" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_verifier_fbauth" value="verify token, hosted domain" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1;fontSize=11;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="verifier" target="fbauth">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="215" y="615" />
+              <mxPoint x="477" y="615" />
+            </Array>
+            <mxPoint as="offset" x="0" y="8" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_grant_fbauth" value="Grant changed: refresh claims" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1;fontSize=11;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.7;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="grant" target="fbauth">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="425" y="640" />
+              <mxPoint x="593" y="640" />
+            </Array>
+            <mxPoint as="offset" x="0" y="-8" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Edges: inside API -->
+        <mxCell id="e_verifier_grant" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="verifier" target="grant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_grant_routers" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="grant" target="routers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_routers_lru" value="lookup" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="routers" target="lru">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: API to store -->
+        <mxCell id="e_lru_store" value="miss: SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lru" target="store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_grant_store" value="grants (short TTL)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="grant" target="store">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="0" y="70" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_version_store" value="Sync stamps" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="version" target="store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Edges: replication -->
+        <mxCell id="e_sched_job" value="triggers" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="sched" target="job">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="0" y="42" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_bq_job" value="reads tables named in sync settings" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="bigquery" target="job">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="110" y="-45" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_job_s1" value="per Table sync" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="job" target="s1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s1_gcs" value="Parquet" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="s1" target="gcs">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="0" y="52" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s1_s2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s1" target="s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s2_dec" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s2" target="dec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_dec_s4" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec" target="s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_dec_fail" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec" target="fail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s4_s5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s4" target="s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_fail_mon" value="alert" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fail" target="monitoring">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1310" y="865" />
+              <mxPoint x="1310" y="530" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s4_store" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" edge="1" parent="1" source="s4" target="store">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="985" />
+              <mxPoint x="730" y="1030" />
+            </Array>
+                      </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s5_store" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.7;entryDx=0;entryDy=0;" edge="1" parent="1" source="s5" target="store">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="1095" />
+              <mxPoint x="730" y="1070" />
+            </Array>
+                      </mxGeometry>
+        </mxCell>
+
+        <!-- Edges: delivery -->
+        <mxCell id="e_github_actions" value="PR / merge to main" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="github" target="actions">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="0" y="48" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_actions_registry" value="push image" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="actions" target="registry">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1480" y="1285" />
+            </Array>
+            <mxPoint as="offset" x="0" y="-10" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_terraform_gcp" value="provisions all three projects" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1;fontSize=11;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.09375;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="terraform" target="gcp">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="90" y="0" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Layers" id="platform-layers">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1320" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="L_title" value="&lt;b&gt;Dashboard Platform&lt;/b&gt; &amp;#8212; the eleven layers (spec issue #1)" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="0" width="1000" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="L_h1" value="&lt;b&gt;Flow layers&lt;/b&gt; &amp;#8212; requests travel down as far as Storage; data travels up as far as Storage; a request never reaches Analytics" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="36" width="1000" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="L_h2" value="&lt;b&gt;Cross-cutting layers&lt;/b&gt; &amp;#8212; apply to every flow layer" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="36" width="660" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="L_frontend" value="&lt;b&gt;Frontend layer&lt;/b&gt; &amp;#8212; show data fast and consistently&lt;br&gt;React Dashboards &amp;#183; pages and charts &amp;#183; shared query hooks &amp;#183; browser cache (IndexedDB) &amp;#183; Firebase Hosting" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_contract" value="&lt;b&gt;Contract layer&lt;/b&gt; &amp;#8212; fix the shape of what may be asked and what each number means&lt;br&gt;named typed queries &amp;#183; generated TypeScript client &amp;#183; Measure catalogue (one definition and roll-up rule per Measure)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="40" y="230" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_access" value="&lt;b&gt;Access layer&lt;/b&gt; &amp;#8212; decide who may open which Dashboard, and remember how that changed&lt;br&gt;Firebase Authentication (Google, Workspace domain) &amp;#183; token verifier &amp;#183; Grants &amp;#183; Grant events (append-only) &amp;#183; admin Grant API + access review report" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="390" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_serving" value="&lt;b&gt;Serving layer&lt;/b&gt; &amp;#8212; answer Dashboard queries in milliseconds&lt;br&gt;FastAPI on Cloud Run &amp;#183; response cache keyed by Sync stamps &amp;#183; stamps endpoint &amp;#183; adds no business calculation" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="550" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_storage" value="&lt;b&gt;Storage layer&lt;/b&gt; &amp;#8212; hold the served copy of the data (requests and data meet here)&lt;br&gt;PostgreSQL on Cloud SQL (Serving store) &amp;#183; synced tables + indexes &amp;#183; Grants + Grant events &amp;#183; sync log + Sync stamps" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="40" y="710" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sync" value="&lt;b&gt;Sync layer&lt;/b&gt; &amp;#8212; carry Source tables into Storage on schedule&lt;br&gt;Table syncs &amp;#183; Sync schedules + a default &amp;#183; atomic swap &amp;#183; freshness limits &amp;#183; own package + CLI (Cloud Run Job)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="870" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_analytics" value="&lt;b&gt;Analytics layer&lt;/b&gt; &amp;#8212; produce the numbers&lt;br&gt;BigQuery (Source) &amp;#183; final tables at chart grain &amp;#183; Measures calculated only here &amp;#183; data history and versioning" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1030" width="1000" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_standards" value="&lt;b&gt;Standards layer&lt;/b&gt;&lt;br&gt;&lt;br&gt;make every Dashboard look and behave alike&lt;br&gt;&lt;br&gt;shared UI and chart packages&lt;br&gt;&lt;br&gt;lint rules that enforce them&lt;br&gt;&lt;br&gt;layout shell&lt;br&gt;&lt;br&gt;scaffolding generator&lt;br&gt;&lt;br&gt;one monorepo (pnpm + Turborepo, uv)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;align=center;verticalAlign=top;spacing=10;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="70" width="150" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="L_infra" value="&lt;b&gt;Infrastructure layer&lt;/b&gt;&lt;br&gt;&lt;br&gt;provide the environments everything runs in&lt;br&gt;&lt;br&gt;three GCP projects: dev, QA, prod&lt;br&gt;&lt;br&gt;Terraform, one module&lt;br&gt;&lt;br&gt;Secret Manager&lt;br&gt;&lt;br&gt;one service account per component&lt;br&gt;&lt;br&gt;region europe-west2" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;align=center;verticalAlign=top;spacing=10;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="70" width="150" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="L_delivery" value="&lt;b&gt;Delivery layer&lt;/b&gt;&lt;br&gt;&lt;br&gt;move a change from pull request to prod&lt;br&gt;&lt;br&gt;GitHub Actions&lt;br&gt;&lt;br&gt;affected-only checks + Measure catalogue check&lt;br&gt;&lt;br&gt;preview deploys&lt;br&gt;&lt;br&gt;promote dev to QA to prod, same artefacts&lt;br&gt;&lt;br&gt;rollback = previous tag" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;align=center;verticalAlign=top;spacing=10;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="70" width="150" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="L_obs" value="&lt;b&gt;Observability layer&lt;/b&gt;&lt;br&gt;&lt;br&gt;record health and use, alert, retain&lt;br&gt;&lt;br&gt;structured request logs&lt;br&gt;&lt;br&gt;alerts: errors, latency, sync failure, freshness&lt;br&gt;&lt;br&gt;access log kept 13 months in an audit dataset&lt;br&gt;&lt;br&gt;last-used times for access review" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;align=center;verticalAlign=top;spacing=10;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="70" width="150" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="L_e1" value="asks only through named queries" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;strokeWidth=2;strokeColor=#6c8ebf;fontSize=12;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="L_frontend" target="L_contract">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="170" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_e2" value="request carries the ID token" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;strokeWidth=2;strokeColor=#6c8ebf;fontSize=12;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="L_contract" target="L_access">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="170" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_e3" value="allowed only with a Grant" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;strokeWidth=2;strokeColor=#6c8ebf;fontSize=12;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="L_access" target="L_serving">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="170" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_e4" value="SQL on a cache miss" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;strokeWidth=2;strokeColor=#6c8ebf;fontSize=12;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="L_serving" target="L_storage">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="170" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_e5" value="tables read on a Sync schedule" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;strokeWidth=2;strokeColor=#82b366;fontSize=12;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="L_analytics" target="L_sync">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="170" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_e6" value="atomic swap + new Sync stamp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;strokeWidth=2;strokeColor=#82b366;fontSize=12;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="L_sync" target="L_storage">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" x="170" y="0" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_legend" value="Legend" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1170" width="520" height="126" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg1" value="" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="L_legend">
+          <mxGeometry x="10" y="30" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg1t" value="Request path: blue arrows, top down to Storage" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="L_legend">
+          <mxGeometry x="50" y="28" width="460" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg2" value="" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="L_legend">
+          <mxGeometry x="10" y="54" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg2t" value="Data path: green arrows, bottom up to Storage" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="L_legend">
+          <mxGeometry x="50" y="52" width="460" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg3" value="" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="L_legend">
+          <mxGeometry x="10" y="78" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg3t" value="Grey: cross-cutting layer; dashed: owned upstream" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="L_legend">
+          <mxGeometry x="50" y="76" width="460" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg4" value="" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="L_legend">
+          <mxGeometry x="10" y="102" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="L_lg4t" value="Purple: identity and access" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="L_legend">
+          <mxGeometry x="50" y="100" width="460" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
